@@ -3,7 +3,7 @@
 class database{
 
     function opencon(){
-        return new PDO('mysql:host=localhost; dbname=loginmethod', 'root', '');
+        return new PDO('mysql:host=localhost; dbname=database', 'root', '');
     }
 
 
@@ -48,7 +48,7 @@ function signup($username, $email, $password){
     return false;
 }
 // Insert the new username and password into the database
-    return $con->prepare("INSERT INTO users(username,user_email,password)
+    return $con->prepare("INSERT INTO users(username,email,password)
 VALUES (?, ?, ?)")
            ->execute([$username,$email, $password]);
            

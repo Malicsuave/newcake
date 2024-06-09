@@ -1,108 +1,30 @@
 <?php
-  session_start();
-   if (empty($_SESSION['username'])) {
-   header('location:index.php');
- }
+ 
+ require_once('classes/database.php');
+ $con=new database();
 
-require_once('classes/database.php');
-$con = new database();
-$error = "";
-if (isset($_POST['login'])) {
-    
-    // Getting the account information
+ $error = "";
+  if(isset($_POST["signup"])) {
     $username = $_POST['username'];
-    $email = $_POST['email'];
-
-    $password = password_hash($_POST['password'], PASSWORD_BCRYPT);
+    $email= $_POST['email'];
+    $password = $_POST['password'];
+    $confirm = $_POST['confirm'];
+   
     
-    // Getting the personal information
-    $firstname = $_POST['firstname'];
-    $lastname = $_POST['lastname'];
-    $birthday = $_POST['birthday'];
-    $sex = $_POST['sex'];
-  
-    // Getting the address information
-    $street = $_POST['user_street'];
-    $barangay = $_POST['barangay_text'];
-    $city = $_POST['city_text'];
-    $province = $_POST['region_text'];
 
-   // Handle file upload
-   $target_dir = "uploads/";
-   $original_file_name = basename($_FILES["profile_picture"]["name"]);
-   
-   // NEW CODE: Initialize $new_file_name with $original_file_name
-    $new_file_name = $original_file_name; 
-   
-   
-    $target_file = $target_dir . $original_file_name;
-    $imageFileType = strtolower(pathinfo($target_file, PATHINFO_EXTENSION));
-    $uploadOk = 1;
-   
-   // Check if file already exists and rename if necessary
- // Check if file already exists and rename if necessary
- if (file_exists($target_file)) {
-   // Generate a unique file name by appending a timestamp
-   $new_file_name = pathinfo($original_file_name, PATHINFO_FILENAME) . '_' . time() . '.' . $imageFileType;
-   $target_file = $target_dir . $new_file_name;
- } else {
-   // Update $target_file with the original file name
-   $target_file = $target_dir . $original_file_name;
-}                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                           
-    // Check if file is an actual image or fake image
-    $check = getimagesize($_FILES["profile_picture"]["tmp_name"]);
-    if ($check === false) {
-        echo "File is not an image.";
-        $uploadOk = 0;
+    if($password==$confirm) {
+        if ($con->signup($username,$email,$password)) {
+            header('location:sign-in.php');
+    }else{
+        $error_message ="Username already exists.Please Choose
+        a diffent username.";
     }
-
-    // Check file size
-    if ($_FILES["profile_picture"]["size"] > 500000) {
-        echo "Sorry, your file is too large.";
-        $uploadOk = 0;
-    }
-
-    // Allow certain file formats
-    if ($imageFileType != "jpg" && $imageFileType != "png" && $imageFileType != "jpeg" && $imageFileType != "gif") {
-        echo "Sorry, only JPG, JPEG, PNG & GIF files are allowed.";
-        $uploadOk = 0;
-    }
-
-    // Check if $uploadOk is set to 0 by an error
-    if ($uploadOk == 0) {
-        echo "Sorry, your file was not uploaded.";
-    } else {
-        if (move_uploaded_file($_FILES["profile_picture"]["tmp_name"], $target_file)) {
-            echo "The file " . htmlspecialchars($new_file_name) . " has been uploaded.";
-
-            // Save the user data and the path to the profile picture in the database
-            $profile_picture_path = 'uploads/'.$new_file_name; // Save the new file name (without directory)
-            
-            $userID = $con->signupUser($firstname, $lastname, $birthday, $sex, $email, $username, $password, $profile_picture_path);
-
-            if ($userID) {
-                // Signup successful, insert address into users_address table
-                if ($con->insertAddress($userID, $street, $barangay, $city, $province)) {
-                    // Address insertion successful, redirect to login page
-                    header('location:index.php');
-                    exit; // Stop further execution
-                } else {
-                    // Address insertion failed, display error message
-                    $error = "Error occurred while signing up. Please try again.";
-                }
-            } else {
-                // Signup failed, display error message
-                echo "Sorry, there was an error signing up.";
-            }
-        } else {
-            // File upload failed, display error message
-            echo "Sorry, there was an error uploading your file.";
-        }
-    }
+}else{
+    $error_message = "Password did not match";
 }
-?>
 
-
+  }
+ ?>
 
 
 
@@ -197,9 +119,9 @@ if (isset($_POST['login'])) {
                                         </div>
 
                                         <div class="form-floating">
-                                            <input type="password" name="confirm_password" id="confirm_password" pattern="[0-9a-zA-Z]{4,10}" class="form-control" placeholder="Password" required>
+                                            <input type="password" name="confirm" id="confirm" pattern="[0-9a-zA-Z]{4,10}" class="form-control" placeholder="Password" required>
 
-                                            <label for="confirm_password">Password Confirmation</label>
+                                            <label for="confirm">Password Confirmation</label>
                                             <div class="valid-feedback">Looks good!</div>
                                             <div class="invalid-feedback">Please confirm your password.</div>
                                         </div>
